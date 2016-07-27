@@ -1,0 +1,154 @@
+Option Explicit
+
+Private Const xlUp As Long = -4162
+ 'I often had to open up email and look for a String and copy corresponding information
+ 'in excel sheet I maintained
+ 'The code beneath asks for the information sought and demarks it by a :
+ 'The names that follow are stored in the excel rows in format name+surname
+ 'hence only full names should be sought.
+ 
+ 
+ Sub CopyNominees(olItem As Outlook.mailItem)
+ 'Sub CopyNominees()
+ 'uncomment the arguments it needs when not testing on current item
+ 'Dim olItem As Outlook.mailItem
+ 'comment the above line when not testing on current item
+ Dim xlApp As Object
+ Dim xlWB As Object
+ Dim xlSheet As Object
+ Dim vText, vText2, vText3, vText4, vText5 As Variant
+ Dim sText As String
+ Dim rCount As Long
+ Dim bXStarted As Boolean
+ Dim enviro As String
+ Dim strPath As String
+ Dim Reg1 As Object
+ Dim Reg2 As Object
+ Dim Reg3 As Object
+ Dim M1 As Object
+ Dim M As Object
+               
+enviro = CStr(Environ("USERPROFILE"))
+'the path of the workbook
+ strPath = enviro & "userProfile\foo.xlsx"
+     On Error Resume Next
+     Set xlApp = GetObject(, "Excel.Application")
+     If Err <> 0 Then
+         Application.StatusBar = "Please wait while Excel source is opened ... "
+         Set xlApp = CreateObject("Excel.Application")
+         bXStarted = True
+     End If
+     On Error GoTo 0
+     'Open the workbook to input the data
+     Set xlWB = xlApp.Workbooks.Open(strPath)
+     Set xlSheet = xlWB.Sheets("fromMail")
+     'Set olItem = Application.ActiveExplorer().Selection(1)
+ 
+    'Find the next empty line of the worksheet
+     rCount = xlSheet.Range("B" & xlSheet.Rows.Count).End(xlUp).Row
+     rCount = rCount + 1
+      
+     sText = olItem.Body
+ 
+ 
+ 'For TechStock nominations
+ 
+     Set Reg1 = CreateObject("VBScript.RegExp")
+ ' \s* = invisible spaces
+    ' \w* = match word
+      
+    With Reg1
+        .Pattern = "((TechFair:\w*)\s*(\w*\s*\w*)\s*(\w*\s*\w*)\s*(\w*\s*\w*)\s*(\w*\s*\w*)\s*(\w*\s*\w*))"
+        'I could have worked with an optional regular rexpression wherein the user does not enter full name
+    End With
+    If Reg1.test(sText) Then
+      
+' each "(\w*)" and the "(\d)" are assigned a vText variable
+        Set M1 = Reg1.Execute(sText)
+        For Each M In M1
+           vText = Trim(M.SubMatches(1))
+           vText2 = Trim(M.SubMatches(2))
+           vText3 = Trim(M.SubMatches(3))
+           vText4 = Trim(M.SubMatches(4))
+           vText5 = Trim(M.SubMatches(5))
+        Next
+    End If
+      
+  xlSheet.Range("B" & rCount) = vText
+  xlSheet.Range("c" & rCount) = vText2
+  xlSheet.Range("d" & rCount) = vText3
+  xlSheet.Range("e" & rCount) = vText4
+  xlSheet.Range("f" & rCount) = vText5
+  rCount = rCount + 1
+  
+  ' ===================================================================================
+  
+    'For TechFair nominations
+         Set Reg2 = CreateObject("VBScript.RegExp")
+   ' \s* = invisible spaces
+    ' \w* = match event
+      
+      
+    With Reg2
+        .Pattern = "((TechFair:\w*)\s*(\w*\s*\w*)\s*(\w*\s*\w*)\s*(\w*\s*\w*)\s*(\w*\s*\w*)\s*(\w*\s*\w*))"
+    End With
+    If Reg2.test(sText) Then
+      
+' each "(\w*)" and the "(\d)" are assigned a vText variable
+        Set M1 = Reg2.Execute(sText)
+        For Each M In M1
+           vText = Trim(M.SubMatches(1))
+           vText2 = Trim(M.SubMatches(2))
+           vText3 = Trim(M.SubMatches(3))
+           vText4 = Trim(M.SubMatches(4))
+           vText5 = Trim(M.SubMatches(5))
+        Next
+    End If
+  xlSheet.Range("B" & rCount) = vText
+  xlSheet.Range("c" & rCount) = vText2
+  xlSheet.Range("d" & rCount) = vText3
+  xlSheet.Range("e" & rCount) = vText4
+  xlSheet.Range("f" & rCount) = vText5
+    rCount = rCount + 1
+    
+    
+'============================================================================================
+    
+    'For Hackathon nominations
+         Set Reg3 = CreateObject("VBScript.RegExp")
+    ' \s* = invisible spaces
+    ' \w* = match event
+      
+    With Reg3
+        .Pattern = "((Hackathon:\w*)\s*(\w*\s*\w*)\s*(\w*\s*\w*)\s*(\w*\s*\w*)\s*(\w*\s*\w*)\s*(\w*\s*\w*))"
+    End With
+    If Reg3.test(sText) Then
+      
+' each "(\w*)" and the "(\d)" are assigned a vText variable
+        Set M1 = Reg3.Execute(sText)
+        For Each M In M1
+           vText = Trim(M.SubMatches(1))
+           vText2 = Trim(M.SubMatches(2))
+           vText3 = Trim(M.SubMatches(3))
+           vText4 = Trim(M.SubMatches(4))
+           vText5 = Trim(M.SubMatches(5))
+        Next
+    End If
+ 
+  xlSheet.Range("B" & rCount) = vText
+  xlSheet.Range("c" & rCount) = vText2
+  xlSheet.Range("d" & rCount) = vText3
+  xlSheet.Range("e" & rCount) = vText4
+  xlSheet.Range("f" & rCount) = vText5
+ 
+     xlWB.Close 1
+     If bXStarted Then
+         xlApp.Quit
+     End If
+     Set M = Nothing
+     Set M1 = Nothing
+     Set Reg1 = Nothing
+     Set xlApp = Nothing
+     Set xlWB = Nothing
+     Set xlSheet = Nothing
+ End Sub
